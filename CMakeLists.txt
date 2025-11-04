@@ -106,3 +106,10 @@ install(TARGETS rt_engine RUNTIME DESTINATION bin)
 install(DIRECTORY configs/ DESTINATION share/crossbring-rt-engine/configs)
 
 enable_testing()
+
+if(ZeroMQ_FOUND)
+  add_executable(zmq_sub_demo apps/zmq_sub_demo.cpp)
+  target_link_libraries(zmq_sub_demo PRIVATE ${ZeroMQ_LIBRARIES})
+  target_include_directories(zmq_sub_demo PRIVATE ${ZeroMQ_INCLUDE_DIRS})
+  target_compile_definitions(zmq_sub_demo PRIVATE USE_ZEROMQ)
+endif()

@@ -1,0 +1,16 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "panels": [
+    { "type": "stat", "title": "Processed", "gridPos": { "h": 6, "w": 12, "x": 0, "y": 0 }, "targets": [ { "expr": "crossbring_processed_total" } ] },
+    { "type": "stat", "title": "Dropped",   "gridPos": { "h": 6, "w": 12, "x": 12, "y": 0 }, "targets": [ { "expr": "crossbring_dropped_total" } ] }
+  ],
+  "schemaVersion": 37,
+  "style": "dark",
+  "tags": ["crossbring"],
+  "templating": { "list": [] },
+  "time": { "from": "now-15m", "to": "now" },
+  "title": "Crossbring RT Engine",
+  "version": 1
+}
+

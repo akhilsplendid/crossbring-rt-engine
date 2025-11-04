@@ -16,6 +16,7 @@
 #include "crossbring/sinks/batching_sink.h"
 #include "crossbring/sinks/recent_buffer_sink.h"
 #include "crossbring/http/http_server.h"
+#include "crossbring/http/event_hub.h"
 #include "crossbring/sinks/zmq_sink.h"
 #include "crossbring/sources/af_https_source.h"
 
@@ -130,10 +131,13 @@ int main(int argc, char** argv) {
 
     // Recent buffer + HTTP server
     std::shared_ptr<RecentBuffer> recent;
+    std::shared_ptr<EventHub> hub;
 #ifdef USE_HTTP_SERVER
     if (cfg.contains("http") && cfg["http"].value("enabled", true)) {
         recent = std::make_shared<RecentBuffer>(cfg["http"].value("recent_capacity", 500));
         add_sink(std::make_shared<RecentBufferSink>(recent));
+        hub = std::make_shared<EventHub>();
+        add_sink(std::make_shared<EventHubSink>(hub));
     }
 #endif
 
@@ -154,7 +158,7 @@ int main(int argc, char** argv) {
     if (recent) {
         std::string host = cfg["http"].value("host", std::string("127.0.0.1"));
         int port = cfg["http"].value("port", 9100);
-        http = std::make_unique<HttpServer>(engine, recent, host, port);
+        http = std::make_unique<HttpServer>(engine, recent, host, port, hub);
         http->start();
         spdlog::info("HTTP server on http://{}:{}/", host, port);
     }

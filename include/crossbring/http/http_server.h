@@ -11,10 +11,13 @@ namespace crossbring {
 
 class RecentBuffer; // fwd (stores last N events)
 
+class EventHub; // fwd
+
 class HttpServer {
 public:
     HttpServer(Engine& engine, std::shared_ptr<RecentBuffer> recent,
-               const std::string& host = "127.0.0.1", int port = 9100);
+               const std::string& host = "127.0.0.1", int port = 9100,
+               std::shared_ptr<EventHub> hub = nullptr);
     ~HttpServer();
 
     void start();
@@ -25,6 +28,7 @@ private:
 
     Engine& engine_;
     std::shared_ptr<RecentBuffer> recent_;
+    std::shared_ptr<EventHub> hub_;
     std::string host_;
     int port_;
     std::atomic<bool> running_{false};
@@ -32,4 +36,3 @@ private:
 };
 
 } // namespace crossbring
-
