@@ -116,3 +116,12 @@ Run:
 
 ## CI
 - GitHub Actions workflow builds C++ and Docker images on push/PR: `.github/workflows/ci.yml`.
+
+## Releases and GHCR Images
+- Tag a release (e.g., `v0.1.0`) to trigger:
+  - Cross-platform binaries attached to the GitHub Release
+  - GHCR image publish for engine and bridge with tags: `latest`, `<major>.<minor>`, and full `<version>`
+- Pull images:
+  - Engine: `docker pull ghcr.io/akhilsplendid/crossbring-rt-engine:latest`
+  - Bridge: `docker pull ghcr.io/akhilsplendid/crossbring-rt-bridge:latest`
+- Visibility note: If packages appear private, set them to public in GitHub Packages settings for this repo.
