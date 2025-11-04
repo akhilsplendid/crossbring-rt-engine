@@ -1,0 +1,23 @@
+{
+  "queue_capacity": 2048,
+  "workers": 4,
+  "backpressure": "block",
+  "sources": {
+    "sensors": [
+      { "name": "temp", "period_ms": 50 },
+      { "name": "rpm", "period_ms": 75 }
+    ]
+  },
+  "sinks": {
+    "console": false,
+    "batching": { "enabled": false, "batch_size": 32, "flush_ms": 200 },
+    "zmq_pub": { "enabled": true, "endpoint": "tcp://*:5556" }
+  },
+  "http": {
+    "enabled": true,
+    "host": "0.0.0.0",
+    "port": 9100,
+    "recent_capacity": 1000
+  }
+}
+

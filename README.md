@@ -106,3 +106,13 @@ Run:
 ## Engine Docker Image
 - Build locally: `docker build -t crossbring/rt-engine .`
 - Run: `docker run --rm -p 9100:9100 crossbring/rt-engine`
+
+## Full Stack with Docker Compose
+- Starts the engine (with ZMQ PUB on 5556), Prometheus, Grafana, and ZMQ→WS bridge:
+  - `docker compose up -d`
+  - Engine metrics: `http://localhost:9100/metrics`
+  - Grafana: `http://localhost:3000` (admin/admin)
+  - Bridge UI: `http://localhost:8081/`
+
+## CI
+- GitHub Actions workflow builds C++ and Docker images on push/PR: `.github/workflows/ci.yml`.

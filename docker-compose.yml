@@ -1,5 +1,20 @@
 version: "3.8"
 services:
+  engine:
+    build:
+      context: .
+    container_name: crossbring-engine
+    command: ["/app/rt_engine", "/app/configs/config.docker.json"]
+    ports:
+      - "9100:9100"
+      - "5556:5556"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9100/metrics"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+
   prometheus:
     image: prom/prometheus:latest
     volumes:
@@ -8,6 +23,8 @@ services:
       - "9090:9090"
     command:
       - --config.file=/etc/prometheus/prometheus.yml
+    depends_on:
+      - engine
 
   grafana:
     image: grafana/grafana:latest
@@ -26,9 +43,10 @@ services:
     build:
       context: ./web/bridge
     environment:
-      - ZMQ_ENDPOINT=tcp://host.docker.internal:5556
+      - ZMQ_ENDPOINT=tcp://engine:5556
       - PORT=8081
     ports:
       - "8081:8081"
     depends_on:
+      - engine
       - grafana

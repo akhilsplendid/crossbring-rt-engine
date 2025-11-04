@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+
+jobs:
+  build-cpp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: sudo apt-get update && sudo apt-get install -y g++ cmake pkg-config
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_HTTP_SERVER=ON
+      - name: Build
+        run: cmake --build build --config Release -j
+      - name: List binaries
+        run: ls -alh build
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build engine image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: crossbring/rt-engine:ci
+      - name: Build bridge image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./web/bridge
+          file: ./web/bridge/Dockerfile
+          push: false
+          tags: crossbring/rt-bridge:ci
+
