@@ -115,8 +115,8 @@ int main(int argc, char** argv) {
     }
 
     // HTTPS AF source (optional)
-    std::unique_ptr<AfHttpsSource> af_https;
 #ifdef USE_CPR
+    std::unique_ptr<AfHttpsSource> af_https;
     if (cfg["sources"].contains("af_https") && cfg["sources"]["af_https"].value("enabled", false)) {
         auto src = cfg["sources"]["af_https"].value("source", std::string("af_https"));
         int interval = cfg["sources"]["af_https"].value("interval_ms", 5000);
