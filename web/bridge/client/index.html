@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Crossbring ZMQ→WS Live</title>
+  <style>
+    body{font-family:system-ui,Segoe UI,Arial;margin:20px}
+    table{border-collapse:collapse;width:100%}
+    td,th{border:1px solid #ccc;padding:4px}
+    #status{font-weight:bold}
+  </style>
+  <script>
+    function connect(){
+      const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+      const ws = new WebSocket(`${proto}://${location.host}/ws`);
+      const status = document.getElementById('status');
+      const tbody = document.querySelector('#tbl tbody');
+      ws.onopen = () => status.textContent = 'connected';
+      ws.onclose = () => { status.textContent = 'disconnected'; setTimeout(connect, 2000); };
+      ws.onmessage = (ev) => {
+        try{
+          const e = JSON.parse(ev.data);
+          const tr = document.createElement('tr');
+          const title = e.title || e.payload?.title || e.payload?.value || '';
+          tr.innerHTML = `<td>${e.source||''}</td><td>${e.key||''}</td><td>${String(title).slice(0,120)}</td>`;
+          tbody.insertBefore(tr, tbody.firstChild);
+          while (tbody.children.length > 200) tbody.removeChild(tbody.lastChild);
+        }catch{}
+      };
+    }
+    window.onload = connect;
+  </script>
+  </head>
+<body>
+  <h1>Crossbring Live via WebSocket</h1>
+  <p>Status: <span id="status">connecting...</span></p>
+  <p>Tip: Ensure engine runs ZeroMQ PUB and bridge points to the correct endpoint.</p>
+  <table id="tbl"><thead><tr><th>source</th><th>key</th><th>title/value</th></tr></thead><tbody></tbody></table>
+</body>
+</html>
+

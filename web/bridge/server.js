@@ -21,7 +21,7 @@ wss.on('connection', (ws) => {
 });
 
 // Serve static UI
-app.use('/', express.static(path.join(__dirname, '../client')));
+app.use('/', express.static(path.join(__dirname, './client')));
 
 // ZMQ subscriber
 const sock = new zmq.Subscriber();
@@ -39,4 +39,3 @@ console.log('ZMQ SUB connected to', ZMQ_ENDPOINT);
     }
   }
 })();
-
