@@ -7,8 +7,8 @@
 
 namespace crossbring {
 
-Engine::Engine(size_t queue_capacity, size_t workers)
-    : queue_(queue_capacity) {
+Engine::Engine(size_t queue_capacity, size_t workers, bool drop_on_full)
+    : queue_(queue_capacity), drop_on_full_(drop_on_full) {
     if (workers == 0) workers = 1;
     workers_.reserve(workers);
 }
@@ -35,7 +35,8 @@ void Engine::stop() {
 
 bool Engine::submit(Event ev) {
     if (!running_.load(std::memory_order_relaxed)) return false;
-    if (!queue_.push(std::move(ev))) {
+    bool ok = drop_on_full_ ? queue_.try_push(std::move(ev)) : queue_.push(std::move(ev));
+    if (!ok) {
         dropped_.fetch_add(1, std::memory_order_relaxed);
         return false;
     }
@@ -62,4 +63,3 @@ void Engine::worker_loop() {
 }
 
 } // namespace crossbring
-

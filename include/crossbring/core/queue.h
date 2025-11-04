@@ -22,6 +22,14 @@ public:
         return true;
     }
 
+    bool try_push(T item) {
+        std::lock_guard<std::mutex> lock(m_);
+        if (stop_ || q_.size() >= capacity_) return false;
+        q_.push(std::move(item));
+        not_empty_cv_.notify_one();
+        return true;
+    }
+
     std::optional<T> pop() {
         std::unique_lock<std::mutex> lock(m_);
         not_empty_cv_.wait(lock, [&]{ return stop_ || !q_.empty(); });
@@ -41,6 +49,11 @@ public:
         not_full_cv_.notify_all();
     }
 
+    size_t size() const {
+        std::lock_guard<std::mutex> lock(m_);
+        return q_.size();
+    }
+
 private:
     size_t capacity_;
     std::queue<T> q_;
@@ -51,4 +64,3 @@ private:
 };
 
 } // namespace crossbring
-

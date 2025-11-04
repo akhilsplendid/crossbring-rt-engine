@@ -13,6 +13,9 @@
 #include "crossbring/sources/file_json_source.h"
 #include "crossbring/sinks/console_sink.h"
 #include "crossbring/sinks/sqlite_sink.h"
+#include "crossbring/sinks/batching_sink.h"
+#include "crossbring/sinks/recent_buffer_sink.h"
+#include "crossbring/http/http_server.h"
 
 using namespace crossbring;
 
@@ -40,7 +43,9 @@ int main(int argc, char** argv) {
 
     size_t queue_cap = cfg.value("queue_capacity", 1024);
     size_t workers = cfg.value("workers", std::thread::hardware_concurrency());
-    Engine engine(queue_cap, workers);
+    std::string backpressure = cfg.value("backpressure", std::string("block"));
+    bool drop_on_full = (backpressure == "drop");
+    Engine engine(queue_cap, workers, drop_on_full);
 
     // Example processor: add ingest_ts to payload
     engine.add_processor([](Event& ev){
@@ -49,14 +54,25 @@ int main(int argc, char** argv) {
     });
 
     // Sinks
+    auto add_sink = [&](std::shared_ptr<Sink> s)->std::shared_ptr<Sink>{
+        // Optional batching wrapper
+        if (cfg["sinks"].contains("batching") && cfg["sinks"]["batching"].value("enabled", false)) {
+            size_t bs = cfg["sinks"]["batching"].value("batch_size", 32);
+            int fm = cfg["sinks"]["batching"].value("flush_ms", 200);
+            s = std::make_shared<BatchingSink>(s, bs, fm);
+        }
+        engine.add_sink(s);
+        return s;
+    };
+
     if (cfg["sinks"].value("console", true)) {
-        engine.add_sink(make_console_sink());
+        add_sink(make_console_sink());
     }
 #ifdef USE_SQLITE
     if (cfg["sinks"].contains("sqlite") && cfg["sinks"]["sqlite"].value("enabled", false)) {
         auto path = cfg["sinks"]["sqlite"].value("path", std::string("data/events.sqlite"));
         try {
-            engine.add_sink(make_sqlite_sink(path));
+            add_sink(make_sqlite_sink(path));
             spdlog::info("SQLite sink enabled at {}", path);
         } catch (const std::exception& e) {
             spdlog::warn("SQLite sink failed to initialize: {}", e.what());
@@ -84,6 +100,15 @@ int main(int argc, char** argv) {
         }
     }
 
+    // Recent buffer + HTTP server
+    std::shared_ptr<RecentBuffer> recent;
+#ifdef USE_HTTP_SERVER
+    if (cfg.contains("http") && cfg["http"].value("enabled", true)) {
+        recent = std::make_shared<RecentBuffer>(cfg["http"].value("recent_capacity", 500));
+        add_sink(std::make_shared<RecentBufferSink>(recent));
+    }
+#endif
+
     engine.start();
     for (auto& s : sensors) s->start();
     for (auto& f : files) f->start();
@@ -93,6 +118,17 @@ int main(int argc, char** argv) {
     std::signal(SIGTERM, on_sigint);
 #endif
 
+    std::unique_ptr<HttpServer> http;
+#ifdef USE_HTTP_SERVER
+    if (recent) {
+        std::string host = cfg["http"].value("host", std::string("127.0.0.1"));
+        int port = cfg["http"].value("port", 9100);
+        http = std::make_unique<HttpServer>(engine, recent, host, port);
+        http->start();
+        spdlog::info("HTTP server on http://{}:{}/", host, port);
+    }
+#endif
+
     spdlog::info("Engine running. Press Ctrl+C to stop.");
     while (!g_stop.load()) {
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
@@ -100,8 +136,8 @@ int main(int argc, char** argv) {
 
     for (auto& f : files) f->stop();
     for (auto& s : sensors) s->stop();
+    if (http) http->stop();
     engine.stop();
     spdlog::info("Shutdown complete. processed={} dropped={}", engine.processed_count(), engine.dropped_count());
     return 0;
 }
-

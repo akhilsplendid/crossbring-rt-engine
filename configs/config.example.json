@@ -1,6 +1,7 @@
 {
   "queue_capacity": 2048,
   "workers": 4,
+  "backpressure": "block",
   "sources": {
     "sensors": [
       { "name": "temp", "period_ms": 50 },
@@ -12,7 +13,13 @@
   },
   "sinks": {
     "console": true,
-    "sqlite": { "enabled": false, "path": "data/events.sqlite" }
+    "sqlite": { "enabled": false, "path": "data/events.sqlite" },
+    "batching": { "enabled": false, "batch_size": 32, "flush_ms": 200 }
+  },
+  "http": {
+    "enabled": true,
+    "host": "127.0.0.1",
+    "port": 9100,
+    "recent_capacity": 500
   }
 }
-

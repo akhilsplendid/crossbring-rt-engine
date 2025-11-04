@@ -19,7 +19,7 @@ class Engine {
 public:
     using Processor = std::function<void(Event&)>; // in-place mutation allowed
 
-    explicit Engine(size_t queue_capacity = 1024, size_t workers = std::thread::hardware_concurrency());
+    explicit Engine(size_t queue_capacity = 1024, size_t workers = std::thread::hardware_concurrency(), bool drop_on_full = false);
     ~Engine();
 
     void start();
@@ -33,6 +33,7 @@ public:
     // Metrics
     uint64_t processed_count() const { return processed_.load(std::memory_order_relaxed); }
     uint64_t dropped_count() const { return dropped_.load(std::memory_order_relaxed); }
+    size_t queue_size() const { return queue_.size(); }
 
 private:
     void worker_loop();
@@ -44,7 +45,7 @@ private:
     std::atomic<bool> running_{false};
     std::atomic<uint64_t> processed_{0};
     std::atomic<uint64_t> dropped_{0};
+    bool drop_on_full_{false};
 };
 
 } // namespace crossbring
-

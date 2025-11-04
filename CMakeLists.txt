@@ -7,6 +7,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(ENABLE_SQLITE "Enable SQLite sink if available" ON)
 option(ENABLE_ZEROMQ "Enable ZeroMQ publisher if available" OFF)
+option(ENABLE_HTTP_SERVER "Enable built-in HTTP server for metrics/UI" ON)
+option(ENABLE_CPR "Enable CPR HTTP client for HTTPS AF source" OFF)
 
 include(FetchContent)
 
@@ -38,12 +40,35 @@ if(ENABLE_ZEROMQ)
   endif()
 endif()
 
+# Header-only HTTP server/client (cpp-httplib) for metrics/dashboard
+if(ENABLE_HTTP_SERVER)
+  FetchContent_Declare(
+    httplib
+    GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
+    GIT_TAG v0.15.3
+  )
+  FetchContent_MakeAvailable(httplib)
+endif()
+
+# Optional CPR for HTTPS AF source
+if(ENABLE_CPR)
+  FetchContent_Declare(
+    cpr
+    GIT_REPOSITORY https://github.com/libcpr/cpr.git
+    GIT_TAG 1.10.5
+  )
+  set(CPR_BUILD_TESTS OFF CACHE INTERNAL "")
+  set(CPR_ENABLE_SSL ON CACHE INTERNAL "")
+  FetchContent_MakeAvailable(cpr)
+endif()
+
 add_library(crossbring_engine
   src/core/engine.cpp
   src/core/queue.cpp
   src/sources/sensor_simulator.cpp
   src/sources/file_json_source.cpp
   src/sinks/console_sink.cpp
+  src/sinks/recent_buffer_sink.cpp
 )
 
 target_include_directories(crossbring_engine PUBLIC include)
@@ -60,6 +85,18 @@ if(ZeroMQ_FOUND)
   target_include_directories(crossbring_engine PRIVATE ${ZeroMQ_INCLUDE_DIRS})
   target_link_libraries(crossbring_engine PRIVATE ${ZeroMQ_LIBRARIES})
   target_compile_definitions(crossbring_engine PRIVATE USE_ZEROMQ)
+endif()
+
+if(ENABLE_HTTP_SERVER)
+  target_sources(crossbring_engine PRIVATE src/http/http_server.cpp)
+  target_include_directories(crossbring_engine PRIVATE ${httplib_SOURCE_DIR})
+  target_compile_definitions(crossbring_engine PRIVATE USE_HTTP_SERVER)
+endif()
+
+if(ENABLE_CPR)
+  target_sources(crossbring_engine PRIVATE src/sources/af_https_source.cpp)
+  target_link_libraries(crossbring_engine PRIVATE cpr::cpr)
+  target_compile_definitions(crossbring_engine PRIVATE USE_CPR)
 endif()
 
 add_executable(rt_engine apps/rt_engine_main.cpp)
