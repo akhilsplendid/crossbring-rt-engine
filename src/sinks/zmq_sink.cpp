@@ -1,6 +1,7 @@
 #ifdef USE_ZEROMQ
 
 #include <zmq.h>
+#include <string>
 #include <spdlog/spdlog.h>
 
 #include "crossbring/sinks/sink.h"
@@ -42,4 +43,3 @@ std::shared_ptr<Sink> make_zmq_pub_sink(const std::string& endpoint) {
 } // namespace crossbring
 
 #endif // USE_ZEROMQ
-
