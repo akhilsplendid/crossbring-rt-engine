@@ -1,0 +1,35 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Processed Events",
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 0 },
+      "targets": [ { "expr": "crossbring_processed_total" } ]
+    },
+    {
+      "type": "stat",
+      "title": "Dropped Events",
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 0 },
+      "targets": [ { "expr": "crossbring_dropped_total" } ]
+    },
+    {
+      "type": "table",
+      "title": "Recent (JSON link)",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 6 },
+      "options": { "showHeader": true },
+      "pluginVersion": "9.2.0",
+      "targets": []
+    }
+  ],
+  "schemaVersion": 37,
+  "style": "dark",
+  "tags": ["crossbring"],
+  "templating": { "list": [] },
+  "time": { "from": "now-15m", "to": "now" },
+  "timepicker": {},
+  "title": "Crossbring RT Engine",
+  "version": 1
+}
+

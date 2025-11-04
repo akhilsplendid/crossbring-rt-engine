@@ -16,6 +16,8 @@
 #include "crossbring/sinks/batching_sink.h"
 #include "crossbring/sinks/recent_buffer_sink.h"
 #include "crossbring/http/http_server.h"
+#include "crossbring/sinks/zmq_sink.h"
+#include "crossbring/sources/af_https_source.h"
 
 using namespace crossbring;
 
@@ -68,6 +70,17 @@ int main(int argc, char** argv) {
     if (cfg["sinks"].value("console", true)) {
         add_sink(make_console_sink());
     }
+#ifdef USE_ZEROMQ
+    if (cfg["sinks"].contains("zmq_pub") && cfg["sinks"]["zmq_pub"].value("enabled", false)) {
+        auto endpoint = cfg["sinks"]["zmq_pub"].value("endpoint", std::string("tcp://*:5556"));
+        try {
+            add_sink(make_zmq_pub_sink(endpoint));
+            spdlog::info("ZeroMQ PUB sink bound at {}", endpoint);
+        } catch (const std::exception& e) {
+            spdlog::warn("ZeroMQ sink init failed: {}", e.what());
+        }
+    }
+#endif
 #ifdef USE_SQLITE
     if (cfg["sinks"].contains("sqlite") && cfg["sinks"]["sqlite"].value("enabled", false)) {
         auto path = cfg["sinks"]["sqlite"].value("path", std::string("data/events.sqlite"));
@@ -100,6 +113,21 @@ int main(int argc, char** argv) {
         }
     }
 
+    // HTTPS AF source (optional)
+    std::unique_ptr<AfHttpsSource> af_https;
+#ifdef USE_CPR
+    if (cfg["sources"].contains("af_https") && cfg["sources"]["af_https"].value("enabled", false)) {
+        auto src = cfg["sources"]["af_https"].value("source", std::string("af_https"));
+        int interval = cfg["sources"]["af_https"].value("interval_ms", 5000);
+        std::string payload;
+        if (cfg["sources"]["af_https"].contains("payload") && cfg["sources"]["af_https"]["payload"].is_object())
+            payload = cfg["sources"]["af_https"]["payload"].dump();
+        else
+            payload = cfg["sources"]["af_https"].value("payload", std::string("{}"));
+        af_https = std::make_unique<AfHttpsSource>(engine, src, payload, interval);
+    }
+#endif
+
     // Recent buffer + HTTP server
     std::shared_ptr<RecentBuffer> recent;
 #ifdef USE_HTTP_SERVER
@@ -112,6 +140,9 @@ int main(int argc, char** argv) {
     engine.start();
     for (auto& s : sensors) s->start();
     for (auto& f : files) f->start();
+#ifdef USE_CPR
+    if (af_https) af_https->start();
+#endif
 
     std::signal(SIGINT, on_sigint);
 #ifdef SIGTERM
@@ -136,6 +167,9 @@ int main(int argc, char** argv) {
 
     for (auto& f : files) f->stop();
     for (auto& s : sensors) s->stop();
+#ifdef USE_CPR
+    if (af_https) af_https->stop();
+#endif
     if (http) http->stop();
     engine.stop();
     spdlog::info("Shutdown complete. processed={} dropped={}", engine.processed_count(), engine.dropped_count());

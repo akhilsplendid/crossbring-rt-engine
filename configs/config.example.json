@@ -9,12 +9,27 @@
     ],
     "file_json": [
       { "source": "af_jobs", "path": "data/af_jobs.json", "interval_ms": 2000 }
-    ]
+    ],
+    "af_https": {
+      "enabled": false,
+      "source": "af_https",
+      "interval_ms": 5000,
+      "payload": {
+        "filters": [ { "type": "occupationField", "value": "apaJ_2ja_LuF" } ],
+        "fromDate": null,
+        "order": "relevance",
+        "maxRecords": 25,
+        "startIndex": 0,
+        "toDate": "2025-10-29T22:59:57.764Z",
+        "source": "pb"
+      }
+    }
   },
   "sinks": {
     "console": true,
     "sqlite": { "enabled": false, "path": "data/events.sqlite" },
-    "batching": { "enabled": false, "batch_size": 32, "flush_ms": 200 }
+    "batching": { "enabled": false, "batch_size": 32, "flush_ms": 200 },
+    "zmq_pub": { "enabled": false, "endpoint": "tcp://*:5556" }
   },
   "http": {
     "enabled": true,

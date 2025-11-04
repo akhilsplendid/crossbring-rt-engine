@@ -30,7 +30,7 @@ Optional integrations (stubs/ready hooks):
 Requirements: CMake 3.16+, a C++17 compiler. Internet access for dependencies via FetchContent (nlohmann/json, spdlog).
 
 ```
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_HTTP_SERVER=ON
 cmake --build build --config Release
 ```
 
@@ -68,4 +68,21 @@ Run:
 ## Target Role Alignment
 - Emphasizes C++17, concurrency, event-driven design, and real-time ingestion.
 - Demonstrates streaming integration and low-latency processing.
+## Optional: ZeroMQ PUB and HTTPS AF Source
+- ZeroMQ PUB sink
+  - Build with `-DENABLE_ZEROMQ=ON` and ensure `libzmq` is installed.
+  - Enable in config:
+    ```json
+    "sinks": { "zmq_pub": { "enabled": true, "endpoint": "tcp://*:5556" } }
+    ```
+- HTTPS AF source (direct API)
+  - Build with `-DENABLE_CPR=ON` (cpr is fetched and built automatically).
+  - Enable in config under `sources.af_https` (see `configs/config.example.json`).
 
+## Observability
+- Prometheus scrape config example: `configs/prometheus.yml` (targets default `127.0.0.1:9100`).
+- Grafana dashboard example: `configs/grafana-dashboard.json` with basic counters.
+- HTTP endpoints:
+  - `/metrics` (Prometheus format)
+  - `/recent` (JSON array)
+  - `/` (simple HTML dashboard)
