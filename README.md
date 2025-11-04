@@ -1,5 +1,9 @@
 # Crossbring Real-Time Data Processing Engine (C++17)
 
+![CI](https://github.com/akhilsplendid/crossbring-rt-engine/actions/workflows/ci.yml/badge.svg?branch=master)
+![Release](https://github.com/akhilsplendid/crossbring-rt-engine/actions/workflows/release.yml/badge.svg)
+[![Latest Release](https://img.shields.io/github/v/release/akhilsplendid/crossbring-rt-engine?display_name=tag)](https://github.com/akhilsplendid/crossbring-rt-engine/releases)
+
 High-performance C++17 data processing engine for real-time analytics with a multi-threaded design and streaming integration. Simulates sensor streams, ingests external data (Arbetsförmedlingen Platsbanken jobs), processes events with low latency, and sends to sinks (console, optional SQLite).
 
 You can say: Built a high-performance C++ data processing engine for real-time analytics with multi-threaded design and streaming integration.
