@@ -77,13 +77,13 @@ target_link_libraries(crossbring_engine PUBLIC nlohmann_json::nlohmann_json spdl
 if(SQLite3_FOUND)
   target_sources(crossbring_engine PRIVATE src/sinks/sqlite_sink.cpp)
   target_compile_definitions(crossbring_engine PRIVATE USE_SQLITE)
-  target_link_libraries(crossbring_engine PRIVATE SQLite::SQLite3)
+  target_link_libraries(crossbring_engine PUBLIC SQLite::SQLite3)
 endif()
 
 if(ZeroMQ_FOUND)
   target_sources(crossbring_engine PRIVATE src/sinks/zmq_sink.cpp)
   target_include_directories(crossbring_engine PRIVATE ${ZeroMQ_INCLUDE_DIRS})
-  target_link_libraries(crossbring_engine PRIVATE ${ZeroMQ_LIBRARIES})
+  target_link_libraries(crossbring_engine PUBLIC ${ZeroMQ_LIBRARIES})
   target_compile_definitions(crossbring_engine PRIVATE USE_ZEROMQ)
 endif()
 
