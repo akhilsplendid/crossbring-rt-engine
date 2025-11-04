@@ -22,3 +22,13 @@ services:
       - ./configs/grafana-provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
       - ./configs/grafana-dashboards:/var/lib/grafana/dashboards:ro
 
+  bridge:
+    build:
+      context: ./web/bridge
+    environment:
+      - ZMQ_ENDPOINT=tcp://host.docker.internal:5556
+      - PORT=8081
+    ports:
+      - "8081:8081"
+    depends_on:
+      - grafana

@@ -86,3 +86,23 @@ Run:
   - `/metrics` (Prometheus format)
   - `/recent` (JSON array)
   - `/` (simple HTML dashboard)
+
+## ZeroMQ → WebSocket Bridge + Web UI
+- Build and run engine with ZeroMQ PUB enabled in config and CMake `-DENABLE_ZEROMQ=ON`.
+- Start the bridge via Docker Compose (serves a WebSocket and a minimal web UI):
+  - `docker compose up -d bridge`
+  - Open `http://localhost:8081/` to see live events via WebSocket.
+- Bridge envs:
+  - `ZMQ_ENDPOINT` (default `tcp://host.docker.internal:5556`)
+  - `PORT` (default `8081`)
+
+## Windows Build Script
+- Use `scripts/build.ps1`:
+  - Examples:
+    - `pwsh scripts/build.ps1` (Release, HTTP server on, SQLite on)
+    - `pwsh scripts/build.ps1 -EnableZmq` (enable ZeroMQ if available)
+    - `pwsh scripts/build.ps1 -EnableCpr` (enable CPR AF HTTPS source)
+
+## Engine Docker Image
+- Build locally: `docker build -t crossbring/rt-engine .`
+- Run: `docker run --rm -p 9100:9100 crossbring/rt-engine`
