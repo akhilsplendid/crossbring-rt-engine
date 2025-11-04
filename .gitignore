@@ -1,0 +1,40 @@
+# Build artifacts
+build/
+out/
+dist/
+Debug/
+Release/
+*.obj
+*.pdb
+*.ilk
+*.exe
+*.dll
+*.lib
+*.exp
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake-build*/
+install_manifest.txt
+Testing/
+CTestTestfile.cmake
+
+# IDEs
+.vscode/
+.idea/
+*.user
+*.VC.db
+*.VC.opendb
+.vs/
+
+# Data/output
+data/
+logs/
+*.db
+*.sqlite
+*.csv
+
+# OS
+.DS_Store
+Thumbs.db

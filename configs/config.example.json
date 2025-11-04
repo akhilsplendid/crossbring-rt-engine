@@ -1,0 +1,18 @@
+{
+  "queue_capacity": 2048,
+  "workers": 4,
+  "sources": {
+    "sensors": [
+      { "name": "temp", "period_ms": 50 },
+      { "name": "rpm", "period_ms": 75 }
+    ],
+    "file_json": [
+      { "source": "af_jobs", "path": "data/af_jobs.json", "interval_ms": 2000 }
+    ]
+  },
+  "sinks": {
+    "console": true,
+    "sqlite": { "enabled": false, "path": "data/events.sqlite" }
+  }
+}
+
