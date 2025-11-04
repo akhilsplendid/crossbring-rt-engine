@@ -1,7 +1,8 @@
 FROM ubuntu:22.04 AS build
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    g++ cmake git ca-certificates pkg-config libzmq3-dev \
+    g++ make cmake git ca-certificates pkg-config libzmq3-dev \
+    nlohmann-json3-dev libspdlog-dev \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /src
 COPY . .

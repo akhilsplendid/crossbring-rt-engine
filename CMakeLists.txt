@@ -12,20 +12,26 @@ option(ENABLE_CPR "Enable CPR HTTP client for HTTPS AF source" OFF)
 
 include(FetchContent)
 
-# Dependencies: nlohmann_json (header-only) and spdlog (header-only)
-FetchContent_Declare(
-  nlohmann_json
-  GIT_REPOSITORY https://github.com/nlohmann/json.git
-  GIT_TAG v3.11.3
-)
-FetchContent_MakeAvailable(nlohmann_json)
+# Prefer system packages in containers/CI to reduce network fetch
+find_package(nlohmann_json QUIET)
+if(NOT nlohmann_json_FOUND)
+  FetchContent_Declare(
+    nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.11.3
+  )
+  FetchContent_MakeAvailable(nlohmann_json)
+endif()
 
-FetchContent_Declare(
-  spdlog
-  GIT_REPOSITORY https://github.com/gabime/spdlog.git
-  GIT_TAG v1.13.0
-)
-FetchContent_MakeAvailable(spdlog)
+find_package(spdlog QUIET)
+if(NOT spdlog_FOUND)
+  FetchContent_Declare(
+    spdlog
+    GIT_REPOSITORY https://github.com/gabime/spdlog.git
+    GIT_TAG v1.13.0
+  )
+  FetchContent_MakeAvailable(spdlog)
+endif()
 
 # Optional: SQLite3
 if(ENABLE_SQLITE)
